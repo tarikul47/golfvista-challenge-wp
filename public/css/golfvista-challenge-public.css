@@ -1,0 +1,10 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+.golfvista-challenge-wrapper {
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
