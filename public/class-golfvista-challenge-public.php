@@ -286,8 +286,16 @@ class Golfvista_Challenge_Public {
                 $response_message = 'Media verification is still in progress. Please wait...';
                 break;
             case 'media_approved':
-                $response_message = 'Your media has been approved! Redirecting to payment...';
-                break;
+                $main_options = get_option( 'golfvista_challenge_main' );
+                $product_id = isset( $main_options['challenge_product_id'] ) ? $main_options['challenge_product_id'] : 0;
+                $product_url = $product_id ? get_permalink( $product_id ) : '#';
+                wp_send_json_success( array(
+                    'status'      => $current_status,
+                    'message'     => 'Your media has been approved! Redirecting to payment...',
+                    'product_url' => esc_url( $product_url ),
+                ) );
+                wp_die();
+
             case 'media_failed':
                 $response_message = 'Unfortunately, your media did not pass verification. Please try again.';
                 break;

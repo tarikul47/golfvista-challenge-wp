@@ -94,7 +94,7 @@
                                     if (response.data.status === 'media_approved') {
                                         clearInterval(verificationInterval);
                                         verificationInterval = null; // Clear the interval
-                                        window.location.reload(); // Reload to show next step (payment)
+                                        window.location.href = response.data.product_url;
                                     } else if (response.data.status === 'media_failed') {
                                         clearInterval(verificationInterval);
                                         verificationInterval = null; // Clear the interval
