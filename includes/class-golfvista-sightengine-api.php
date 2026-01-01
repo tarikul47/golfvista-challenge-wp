@@ -35,7 +35,7 @@ class Golfvista_Sightengine_Api {
      * @since    1.0.0
      */
     public function __construct() {
-        $options = get_option( 'golfvista-challenge' );
+        $options = get_option( 'golfvista_challenge_main' );
         $this->api_user = isset( $options['sightengine_api_user'] ) ? $options['sightengine_api_user'] : '';
         $this->api_secret = isset( $options['sightengine_api_secret'] ) ? $options['sightengine_api_secret'] : '';
     }
