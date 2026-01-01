@@ -181,21 +181,35 @@ class Golfvista_Challenge_Public {
      */
     public function handle_quiz_submission() {
         if ( isset( $_POST['golfvista_quiz_submission'] ) ) {
+            error_log("Golfvista Challenge: handle_quiz_submission triggered.");
+
             if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'golfvista_quiz_submission_nonce' ) ) {
+                error_log("Golfvista Challenge: Quiz submission security check failed.");
                 wp_die( 'Security check failed.' );
             }
+            error_log("Golfvista Challenge: Quiz submission security check passed.");
 
             $user_id = get_current_user_id();
             if ( ! $user_id ) {
+                error_log("Golfvista Challenge: Quiz submission - User not logged in.");
                 return;
             }
+            error_log("Golfvista Challenge: Quiz submission for user ID: {$user_id}");
 
             $user = get_userdata( $user_id );
+            if (!$user) {
+                error_log("Golfvista Challenge: Quiz submission - Could not retrieve user data for ID: {$user_id}.");
+                return;
+            }
 
             $quiz_options = get_option( 'golfvista_challenge_quiz' );
             $questions = isset( $quiz_options['questions'] ) ? $quiz_options['questions'] : array();
             $answers = isset( $_POST['answers'] ) ? $_POST['answers'] : array();
             $correct_answers = 0;
+
+            error_log("Golfvista Challenge: Quiz submission - Total questions: " . count($questions));
+            error_log("Golfvista Challenge: Quiz submission - User submitted answers: " . print_r($answers, true));
+
 
             foreach ( $questions as $i => $question ) {
                 if ( isset( $answers[ $i ] ) && strcasecmp( trim( $answers[ $i ] ), trim( $question['keyword'] ) ) == 0 ) {
@@ -203,15 +217,21 @@ class Golfvista_Challenge_Public {
                 }
             }
 
+            error_log("Golfvista Challenge: Quiz submission - Correct answers: {$correct_answers}");
+
             if ( $correct_answers >= 4 ) {
                 update_user_meta( $user_id, '_golfvista_challenge_status', 'quiz_passed' );
+                error_log("Golfvista Challenge: User ID {$user_id} status updated to 'quiz_passed'.");
                 $this->plugin->send_notification( $user->user_email, 'Quiz Passed', 'Congratulations! You have passed the quiz.' );
             } else {
                 update_user_meta( $user_id, '_golfvista_challenge_status', 'quiz_failed' );
+                error_log("Golfvista Challenge: User ID {$user_id} status updated to 'quiz_failed'.");
                 $this->plugin->send_notification( $user->user_email, 'Quiz Failed', 'Unfortunately, you did not pass the quiz.' );
             }
 
-            wp_safe_redirect( get_permalink() );
+            $redirect_url = get_permalink();
+            error_log("Golfvista Challenge: Redirecting to: {$redirect_url}");
+            wp_safe_redirect( $redirect_url );
             exit;
         }
     }
