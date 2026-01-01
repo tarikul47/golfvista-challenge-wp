@@ -66,6 +66,10 @@ class Golfvista_Challenge_Public {
         add_action('init', array($this, 'handle_media_submission'));
         add_action('init', array($this, 'handle_quiz_submission'));
         add_action('init', array($this, 'handle_business_plan_submission'));
+
+        // AJAX for media verification status
+        add_action('wp_ajax_golfvista_check_media_verification', array($this, 'ajax_check_media_verification_status'));
+        add_action('wp_ajax_nopriv_golfvista_check_media_verification', array($this, 'ajax_check_media_verification_status'));
     }
 
     /**
@@ -85,6 +89,15 @@ class Golfvista_Challenge_Public {
     public function enqueue_scripts() {
         wp_enqueue_media();
         wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/golfvista-challenge-public.js', array( 'jquery' ), $this->version, false );
+
+        wp_localize_script(
+            $this->plugin_name,
+            'golfvista_challenge_ajax',
+            array(
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'golfvista_media_verification_nonce' ),
+            )
+        );
     }
 
     /**
@@ -151,7 +164,7 @@ class Golfvista_Challenge_Public {
 
                 if ( count( $media_ids ) === 5 ) {
                     update_user_meta( $user_id, '_golfvista_challenge_media_ids', $media_ids );
-                    update_user_meta( $user_id, '_golfvista_challenge_status', 'media_uploaded' );
+                    update_user_meta( $user_id, '_golfvista_challenge_status', 'media_pending_verification' );
                 } else {
                     // Handle error - incorrect number of files
                 }
@@ -241,5 +254,52 @@ class Golfvista_Challenge_Public {
                 }
             }
         }
+    }
+
+    /**
+     * AJAX handler to check media verification status.
+     *
+     * @since 1.0.0
+     */
+    public function ajax_check_media_verification_status() {
+        check_ajax_referer( 'golfvista_media_verification_nonce', 'nonce' );
+
+        $user_id = get_current_user_id();
+        if ( ! $user_id ) {
+            wp_send_json_error( array( 'message' => 'User not logged in.' ) );
+            wp_die();
+        }
+
+        $current_status = $this->get_user_challenge_status( $user_id );
+        $response_message = '';
+
+        if ( 'media_pending_verification' === $current_status ) {
+            // Trigger the media check process if it's still pending
+            // We call run_media_check directly for immediate feedback via AJAX
+            // The scheduled event will act as a fallback if AJAX fails or is not used.
+            $this->plugin->run_media_check( $user_id );
+            $current_status = $this->get_user_challenge_status( $user_id ); // Re-fetch status after running check
+        }
+
+        switch ( $current_status ) {
+            case 'media_pending_verification':
+                $response_message = 'Media verification is still in progress. Please wait...';
+                break;
+            case 'media_approved':
+                $response_message = 'Your media has been approved! Redirecting to payment...';
+                break;
+            case 'media_failed':
+                $response_message = 'Unfortunately, your media did not pass verification. Please try again.';
+                break;
+            default:
+                $response_message = 'An unexpected status occurred: ' . $current_status;
+                break;
+        }
+
+        wp_send_json_success( array(
+            'status'  => $current_status,
+            'message' => $response_message,
+        ) );
+        wp_die();
     }
 }

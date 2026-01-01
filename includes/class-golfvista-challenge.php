@@ -178,7 +178,7 @@ class Golfvista_Challenge
     public function trigger_media_check($meta_id, $object_id, $meta_key, $_meta_value)
     {
         error_log("Golfvista Challenge: trigger_media_check called. meta_key: {$meta_key}, object_id: {$object_id}, _meta_value: {$_meta_value}");
-        if ($meta_key === '_golfvista_challenge_status' && $_meta_value === 'media_uploaded') {
+        if ($meta_key === '_golfvista_challenge_status' && $_meta_value === 'media_pending_verification') {
             if ( ! wp_next_scheduled( 'golfvista_run_media_check', array( 'user_id' => $object_id ) ) ) {
                 wp_schedule_single_event(time(), 'golfvista_run_media_check', array('user_id' => $object_id));
                 error_log("Golfvista Challenge: Scheduled media check for user ID: {$object_id}");

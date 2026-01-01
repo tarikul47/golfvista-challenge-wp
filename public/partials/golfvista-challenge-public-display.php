@@ -32,8 +32,14 @@
                 <?php wp_nonce_field( 'golfvista_media_submission_nonce' ); ?>
                 <input type="submit" name="golfvista_media_submission" class="button button-primary" value="Submit Media" disabled>
             </form>
-        <?php elseif ( 'media_uploaded' === $status ) : ?>
-            <p>Thank you for your submission! Your media has been received and is pending verification. You will be notified shortly.</p>
+        <?php elseif ( 'media_uploaded' === $status || 'media_pending_verification' === $status ) : ?>
+            <div id="media-verification-status">
+                <p>
+                    <span class="spinner is-active" style="float: none; margin: 0 5px;"></span>
+                    Your media is being verified. This may take a moment.
+                </p>
+                <p id="dynamic-verification-message">Checking status...</p>
+            </div>
         <?php elseif ( 'media_failed' === $status ) : ?>
             <p>Unfortunately, your submission did not pass our originality check. Please ensure your photos and videos are not AI-generated and <a href="<?php echo esc_url( add_query_arg( 'try_again', 'true' ) ); ?>">try again</a>.</p>
         <?php elseif ( 'media_approved' === $status ) :
