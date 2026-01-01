@@ -64,7 +64,7 @@ class Golfvista_Sightengine_Api {
 
         $api_url = add_query_arg(
             array(
-                'models' => 'ai_generated',
+                'models' => 'genai',
                 'api_user' => $this->api_user,
                 'api_secret' => $this->api_secret,
                 'url' => $image_url,
