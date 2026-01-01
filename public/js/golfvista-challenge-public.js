@@ -98,7 +98,9 @@
                                     } else if (response.data.status === 'media_failed') {
                                         clearInterval(verificationInterval);
                                         verificationInterval = null; // Clear the interval
-                                        window.location.reload(); // Reload to show 'try again'
+                                        // No reload here, let the user click 'try again'
+                                        // The message should guide them to click the link
+                                        $('#dynamic-verification-message').html('Unfortunately, your media did not pass verification. Please <a href="' + $('#golfvista-try-again-link').attr('href') + '">try again</a>.');
                                     }
                                 } else {
                                     $('#dynamic-verification-message').text('Error checking status: ' + response.data.message);
@@ -115,13 +117,16 @@
                         });
                     }, 5000); // Poll every 5 seconds
                 }
+            } else if ($('#golfvista-try-again-link').length > 0 && verificationInterval) {
+                // If media_failed status is displayed (and try again link is present)
+                // and polling is somehow still running, clear it.
+                clearInterval(verificationInterval);
+                verificationInterval = null;
             }
         }
 
         // Initialize polling when the document is ready, if the user is in the verification stage
-        // We need to pass the current status from PHP to JS to know if polling should start immediately.
-        // For this, we'll need to localize another variable in `enqueue_scripts` in public/class-golfvista-challenge-public.php
-        // Or, we can simply check for the presence of the '#media-verification-status' div,
+        // We can simply check for the presence of the '#media-verification-status' div,
         // which will only be rendered if the status is 'media_pending_verification' or 'media_uploaded'.
         if ($('#media-verification-status').length > 0) {
             checkMediaVerificationStatus();

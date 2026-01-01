@@ -41,7 +41,7 @@
                 <p id="dynamic-verification-message">Checking status...</p>
             </div>
         <?php elseif ( 'media_failed' === $status ) : ?>
-            <p>Unfortunately, your submission did not pass our originality check. Please ensure your photos and videos are not AI-generated and <a href="<?php echo esc_url( add_query_arg( 'try_again', 'true' ) ); ?>">try again</a>.</p>
+            <p>Unfortunately, your submission did not pass our originality check. Please ensure your photos and videos are not AI-generated and <a href="<?php echo esc_url( add_query_arg( 'try_again', 'true' ) ); ?>" id="golfvista-try-again-link">try again</a>.</p>
         <?php elseif ( 'media_approved' === $status ) :
             $main_options = get_option( 'golfvista_challenge_main' );
             $product_id = isset( $main_options['challenge_product_id'] ) ? $main_options['challenge_product_id'] : 0;
