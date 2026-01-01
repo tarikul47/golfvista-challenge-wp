@@ -266,21 +266,45 @@ class Golfvista_Challenge
      */
     public function handle_successful_payment($order_id)
     {
+        error_log("Golfvista Challenge: handle_successful_payment triggered for order ID: {$order_id}");
         $order = wc_get_order($order_id);
+
+        if (! $order) {
+            error_log("Golfvista Challenge: handle_successful_payment - Order object not found for ID: {$order_id}");
+            return;
+        }
+
         $user_id = $order->get_user_id();
         $options = get_option('golfvista_challenge_main');
         $product_id = isset($options['challenge_product_id']) ? $options['challenge_product_id'] : 0;
 
-        if (!$user_id || !$product_id) {
+        if (!$user_id) {
+            error_log("Golfvista Challenge: handle_successful_payment - Missing user ID for order ID: {$order_id}");
             return;
         }
 
+        if (!$product_id) {
+            error_log("Golfvista Challenge: handle_successful_payment - Challenge product ID is not configured.");
+            return;
+        }
+
+        error_log("Golfvista Challenge: handle_successful_payment - User ID: {$user_id}, Configured Challenge Product ID: {$product_id}");
+
         $items = $order->get_items();
+        $challenge_product_found = false;
         foreach ($items as $item) {
+            error_log("Golfvista Challenge: handle_successful_payment - Checking item product ID: {$item->get_product_id()} against challenge product ID: {$product_id} for order ID: {$order_id}");
             if ($item->get_product_id() == $product_id) {
-                update_user_meta($user_id, '_golfvista_challenge_status', 'paid');
+                $challenge_product_found = true;
                 break;
             }
+        }
+
+        if ($challenge_product_found) {
+            update_user_meta($user_id, '_golfvista_challenge_status', 'paid');
+            error_log("Golfvista Challenge: User ID {$user_id} status updated to 'paid' for order ID: {$order_id}");
+        } else {
+            error_log("Golfvista Challenge: Challenge product ID {$product_id} not found in order ID: {$order_id} items.");
         }
     }
 
