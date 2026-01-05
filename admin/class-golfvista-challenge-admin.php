@@ -58,6 +58,31 @@ class Golfvista_Challenge_Admin {
         add_action( 'admin_menu', array( $this, 'add_plugin_admin_menu' ) );
         add_action( 'admin_menu', array( $this, 'add_participants_page' ) );
         add_action( 'admin_init', array( $this, 'options_update' ) );
+        add_action( 'admin_init', array( $this, 'handle_participant_actions' ) );
+    }
+
+    /**
+     * Handle actions related to participants.
+     *
+     * @since    1.0.0
+     */
+    public function handle_participant_actions() {
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'reset_challenge' && isset( $_GET['user_id'] ) ) {
+            $user_id = absint( $_GET['user_id'] );
+            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'golfvista_reset_participant_' . $user_id ) ) {
+                wp_die( 'Security check failed.' );
+            }
+
+            if ( ! current_user_can( 'manage_options' ) ) {
+                wp_die( 'You do not have permission to perform this action.' );
+            }
+
+            delete_user_meta( $user_id, '_golfvista_challenge_status' );
+            delete_user_meta( $user_id, '_golfvista_challenge_media_ids' );
+
+            wp_safe_redirect( admin_url( 'edit.php?post_type=business_plan&page=golfvista-challenge-participants&participant_reset=1' ) );
+            exit;
+        }
     }
 
     /**
@@ -137,6 +162,13 @@ class Golfvista_Challenge_Admin {
      * @since    1.0.0
      */
     public function participants_page_display() {
+        if ( isset( $_GET['participant_reset'] ) && $_GET['participant_reset'] == 1 ) {
+            ?>
+            <div class="notice notice-success is-dismissible">
+                <p><?php _e( 'Participant has been reset.', 'golfvista-challenge' ); ?></p>
+            </div>
+            <?php
+        }
         include_once 'partials/golfvista-challenge-participants-display.php';
     }
 

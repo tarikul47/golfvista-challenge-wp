@@ -58,10 +58,27 @@ class Golfvista_Challenge_Participants_Table extends WP_List_Table {
             'user_id'          => 'User ID',
             'user_name'        => 'User Name',
             'challenge_status' => 'Challenge Status',
-            'business_plan'    => 'Business Plan'
+            'business_plan'    => 'Business Plan',
+            'actions'          => 'Actions'
         );
 
         return $columns;
+    }
+
+    /**
+     * Define what data to show on each column of the table
+     *
+     * @param  Array $item        Data
+     * @param  String $column_name - Current column name
+     *
+     * @return Mixed
+     */
+    public function column_user_name($item) {
+        $nonce = wp_create_nonce('golfvista_reset_participant_' . $item['user_id']);
+        $actions = array(
+            'delete' => sprintf('<a href="?post_type=business_plan&page=%s&action=%s&user_id=%s&_wpnonce=%s">Reset Challenge</a>', $_REQUEST['page'], 'reset_challenge', $item['user_id'], $nonce)
+        );
+        return sprintf('%1$s %2$s', $item['user_name'], $this->row_actions($actions));
     }
 
     /**
