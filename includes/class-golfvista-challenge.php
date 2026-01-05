@@ -247,10 +247,22 @@ class Golfvista_Challenge
 
             error_log("Golfvista Challenge: Sightengine API response for {$media_id} for user ID {$user_id}: " . print_r($result, true));
 
-            if (isset($result['ai_generated']) && $result['ai_generated']['prob'] > 0.5) {
-                error_log("Golfvista Challenge: AI Generated detected for media ID {$media_id} with probability: {$result['ai_generated']['prob']}");
-                $is_original = false;
-                break;
+            if (strpos($mime_type, 'image/') === 0) {
+                if (isset($result['ai_generated']) && $result['ai_generated']['prob'] > 0.5) {
+                    error_log("Golfvista Challenge: AI Generated detected for image media ID {$media_id} with probability: {$result['ai_generated']['prob']}");
+                    $is_original = false;
+                    break;
+                }
+            } elseif (strpos($mime_type, 'video/') === 0) {
+                if (isset($result['data']['frames']) && is_array($result['data']['frames'])) {
+                    foreach ($result['data']['frames'] as $frame) {
+                        if (isset($frame['genai']['ai_generated']['score']) && $frame['genai']['ai_generated']['score'] > 0.5) {
+                            error_log("Golfvista Challenge: AI Generated detected for video media ID {$media_id} in a frame with score: {$frame['genai']['ai_generated']['score']}");
+                            $is_original = false;
+                            break 2; // Break out of both loops
+                        }
+                    }
+                }
             }
         }
 
