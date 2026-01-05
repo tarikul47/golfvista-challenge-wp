@@ -159,10 +159,13 @@ class Golfvista_Challenge_Public {
                 return;
             }
 
+            $media_type = isset($_POST['golfvista_media_type']) ? sanitize_text_field($_POST['golfvista_media_type']) : 'image';
+            $limit = ($media_type === 'image') ? 5 : 1;
+
             if ( isset( $_POST['golfvista_media_ids'] ) && !empty( $_POST['golfvista_media_ids'] ) ) {
                 $media_ids = array_map( 'absint', explode( ',', $_POST['golfvista_media_ids'] ) );
 
-                if ( count( $media_ids ) === 5 ) {
+                if ( count( $media_ids ) === $limit ) {
                     update_user_meta( $user_id, '_golfvista_challenge_media_ids', $media_ids );
                     update_user_meta( $user_id, '_golfvista_challenge_status', 'media_pending_verification' );
                 } else {

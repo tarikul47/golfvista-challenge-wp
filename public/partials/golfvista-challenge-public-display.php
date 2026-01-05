@@ -22,12 +22,17 @@
         <?php if ( 'not_logged_in' === $status ) : ?>
             <p>Please <a href="<?php echo esc_url( wp_login_url( get_permalink() ) ); ?>">log in</a> or <a href="<?php echo esc_url( wp_registration_url() ); ?>">register</a> to participate in the challenge.</p>
         <?php elseif ( 'not_started' === $status ) : ?>
-            <p>Welcome to the challenge! Please upload exactly 5 of your best original photos or 30-second videos to begin.</p>
+            <p>Welcome to the challenge! Please choose whether you want to upload images or a video.</p>
             <form id="media-submission-form" method="post">
+                <div id="media-type-selection">
+                    <label><input type="radio" name="media_type" value="image" checked> Images (must upload 5)</label>
+                    <label><input type="radio" name="media_type" value="video"> Video (must upload 1)</label>
+                </div>
                 <div class="media-uploader-wrapper">
                     <button type="button" class="button" id="upload-media-button">Upload Media</button>
                     <div class="media-preview-wrapper"></div>
                     <input type="hidden" name="golfvista_media_ids" id="golfvista-media-ids" value="">
+                    <input type="hidden" name="golfvista_media_type" id="golfvista-media-type" value="image">
                 </div>
                 <?php wp_nonce_field( 'golfvista_media_submission_nonce' ); ?>
                 <input type="submit" name="golfvista_media_submission" class="button button-primary" value="Submit Media" disabled>
