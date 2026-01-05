@@ -224,7 +224,19 @@ class Golfvista_Challenge
                 break;
             }
             error_log("Golfvista Challenge: Checking media URL: {$media_url} for user ID: {$user_id}");
-            $result = $sightengine_api->check_image($media_url);
+            
+            $mime_type = get_post_mime_type($media_id);
+            $result = null;
+
+            if (strpos($mime_type, 'image/') === 0) {
+                $result = $sightengine_api->check_image($media_url);
+            } elseif (strpos($mime_type, 'video/') === 0) {
+                $result = $sightengine_api->check_video($media_url);
+            } else {
+                error_log("Golfvista Challenge: Unsupported media type '{$mime_type}' for media ID {$media_id}.");
+                $is_original = false;
+                break;
+            }
 
             if (is_wp_error($result)) {
                 error_log("Golfvista Challenge: Sightengine API error for user ID {$user_id}: " . $result->get_error_message());

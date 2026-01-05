@@ -87,4 +87,42 @@ class Golfvista_Sightengine_Api {
             return new WP_Error( 'api_error', 'Sightengine API error: ' . ( isset( $data['error']['message'] ) ? $data['error']['message'] : 'Unknown error' ) );
         }
     }
+
+	/**
+	 * Check a video for AI generation.
+	 *
+	 * @since   1.0.0
+	 * @param   string $video_url The URL of the video to check.
+	 * @return  array|WP_Error The API response or a WP_Error on failure.
+	 */
+	public function check_video( $video_url ) {
+		if ( ! $this->has_credentials() ) {
+			return new WP_Error( 'missing_credentials', 'Sightengine API credentials are not set.' );
+		}
+
+		$api_url = add_query_arg(
+			array(
+				'models' => 'genai',
+				'api_user' => $this->api_user,
+				'api_secret' => $this->api_secret,
+				'url' => $video_url,
+			),
+			'https://api.sightengine.com/1.0/video/check.json'
+		);
+
+		$response = wp_remote_get( $api_url );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( $data && $data['status'] == 'success' ) {
+			return $data;
+		} else {
+			return new WP_Error( 'api_error', 'Sightengine API error: ' . ( isset( $data['error']['message'] ) ? $data['error']['message'] : 'Unknown error' ) );
+		}
+	}
 }
